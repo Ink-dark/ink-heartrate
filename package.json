@@ -1,0 +1,66 @@
+{
+  "name": "ink-heartrate",
+  "version": "1.0.0",
+  "description": "a bluetooth heartrate monitor created by Ink-dark---墨染柒DarkSeven",
+  "main": "main.js",
+  "homepage": "./",
+  "scripts": {
+    "electron": "electron .",
+    "electron-dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && electron .\"",
+    "electron-build": "npm run build && electron-builder",
+    "build": "vite build",
+    "dev": "vite",
+    "preview": "vite preview",
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "pack": "electron-builder --dir",
+    "dist": "npm run build && electron-builder"
+  },
+  "build": {
+    "appId": "com.inkdark.ink-heartrate",
+    "productName": "Ink Heart Rate Monitor",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "main.js",
+      "preload.js",
+      "node_modules/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.healthcare-fitness"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
+    },
+    "linux": {
+      "target": "AppImage",
+      "category": "Office"
+    }
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@vitejs/plugin-react": "^4.2.1",
+    "concurrently": "^8.2.2",
+    "electron": "^39.2.7",
+    "electron-builder": "^26.0.12",
+    "vite": "^5.0.8",
+    "wait-on": "^7.2.0"
+  },
+  "keywords": [
+    "bluetooth",
+    "smart-band",
+    "Heart Rate Broadcasting",
+    "monitor",
+    "electron",
+    "desktop-app"
+  ],
+  "author": "Ink-dark(墨染柒DarkSeven)",
+  "license": "GPL-3.0-only"
+}

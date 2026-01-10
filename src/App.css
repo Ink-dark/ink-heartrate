@@ -1,0 +1,177 @@
+/* 极简心率监测器样式 */
+.App {
+  min-height: 100vh;
+  background: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.minimal-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 20px;
+  padding: 20px 20px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  min-width: 400px;
+  width: 400px;
+  height: 180px;
+  gap: 10px;
+  flex-wrap: nowrap;
+  overflow: visible;
+}
+
+/* 心脏显示区域 */
+.heart-display {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 0 10px;
+}
+
+.heart-icon {
+  font-size: 2.5rem;
+  animation: heartbeat 2s infinite;
+  filter: drop-shadow(0 2px 8px rgba(255, 107, 107, 0.3));
+}
+
+.heart-rate-value {
+  font-size: 2rem;
+  font-weight: 300;
+  color: #ff6b6b;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+  letter-spacing: -2px;
+}
+
+.heart-rate-unit {
+  font-size: 0.9rem;
+  color: rgba(0, 0, 0, 0.6);
+  font-weight: 500;
+  letter-spacing: 2px;
+  align-self: baseline;
+  margin-left: 3px;
+}
+
+/* 心跳动画 */
+@keyframes heartbeat {
+  0% { transform: scale(1); }
+  14% { transform: scale(1.1); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.1); }
+  70% { transform: scale(1); }
+}
+
+/* 控制按钮 */
+.control-status-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px;
+}
+
+.minimal-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0;
+}
+
+.minimal-btn {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: rgba(0, 0, 0, 0.8);
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  min-width: 80px;
+}
+
+.minimal-btn:hover {
+  background: rgba(240, 240, 240, 0.9);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.minimal-btn.connect {
+  background: rgba(76, 175, 80, 0.2);
+  border-color: rgba(76, 175, 80, 0.4);
+  color: rgba(76, 175, 80, 0.8);
+}
+
+.minimal-btn.connect:hover {
+  background: rgba(76, 175, 80, 0.3);
+  color: rgba(76, 175, 80, 1);
+}
+
+.minimal-btn.disconnect {
+  background: rgba(244, 67, 54, 0.2);
+  border-color: rgba(244, 67, 54, 0.4);
+  color: rgba(244, 67, 54, 0.8);
+}
+
+.minimal-btn.disconnect:hover {
+  background: rgba(244, 67, 54, 0.3);
+  color: rgba(244, 67, 54, 1);
+}
+
+.minimal-btn.demo {
+  background: rgba(33, 150, 243, 0.2);
+  border-color: rgba(33, 150, 243, 0.4);
+  color: rgba(33, 150, 243, 0.8);
+}
+
+.minimal-btn.demo:hover {
+  background: rgba(33, 150, 243, 0.3);
+  color: rgba(33, 150, 243, 1);
+}
+
+/* 连接状态 */
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: rgba(0, 0, 0, 0.6);
+  padding: 0 20px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: status-pulse 2s infinite;
+}
+
+.status-dot.connected {
+  background: #4CAF50;
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
+}
+
+.status-dot.disconnected {
+  background: #f44336;
+  box-shadow: 0 0 8px rgba(244, 67, 54, 0.5);
+}
+
+@keyframes status-pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+.status-text {
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+/* 移除响应式垂直布局，始终保持横向布局 */
