@@ -17,7 +17,7 @@
   },
   "build": {
     "appId": "com.inkdark.ink-heartrate",
-    "productName": "Ink Heart Rate Monitor",
+    "productName": "Ink Heartrate Monitor",
     "directories": {
       "output": "release"
     },
