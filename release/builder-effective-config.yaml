@@ -1,0 +1,20 @@
+directories:
+  output: release
+  buildResources: build
+appId: cn.hallochat.ink-dark.ink-heartrate
+productName: Ink-Heartrate
+files:
+  - filter:
+      - dist/**/*
+      - main.js
+      - preload.js
+      - node_modules/**/*
+mac:
+  category: public.app-category.healthcare-fitness
+win:
+  target: nsis
+  icon: icons.ico
+linux:
+  target: AppImage
+  category: Office
+electronVersion: 39.2.7
