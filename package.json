@@ -16,8 +16,8 @@
     "dist": "npm run build && electron-builder"
   },
   "build": {
-    "appId": "com.inkdark.ink-heartrate",
-    "productName": "Ink Heartrate Monitor",
+    "appId": "cn.hallochat.ink-dark.ink-heartrate",
+    "productName": "Ink-Heartrate",
     "directories": {
       "output": "release"
     },
