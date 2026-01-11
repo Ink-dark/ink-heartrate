@@ -4,6 +4,7 @@ import './App.css'
 function App() {
   const [heartRate, setHeartRate] = useState(0)
   const [isConnected, setIsConnected] = useState(false)
+  const [isConnecting, setIsConnecting] = useState(false) // 添加连接中状态
   const [devices, setDevices] = useState([])
   const [isElectronApp, setIsElectronApp] = useState(false)
   const [isDemo, setIsDemo] = useState(false)
@@ -51,7 +52,14 @@ function App() {
   }
 
   const connectToDevice = async () => {
+    // 防止重复连接
+    if (isConnecting || isConnected) {
+      return
+    }
+    
     try {
+      setIsConnecting(true)
+      
       if (isElectronApp) {
         // Electron 环境
         // 简单的设备连接逻辑
@@ -96,6 +104,13 @@ function App() {
           setIsConnected(true)
         })
 
+        // 监听设备断开事件
+        device.addEventListener('gattserverdisconnected', () => {
+          setIsConnected(false)
+          setHeartRate(0)
+          setDevices(prevDevices => prevDevices.filter(d => d.id !== device.id))
+        })
+
         setDevices([...devices, device])
       }
     } catch (error) {
@@ -115,6 +130,9 @@ function App() {
       }
       
       alert(errorMessage)
+    } finally {
+      // 无论连接成功或失败，都重置连接中状态
+      setIsConnecting(false)
     }
   }
 
@@ -173,8 +191,9 @@ function App() {
               <button 
                 className="minimal-btn connect"
                 onClick={connectToDevice}
+                disabled={isConnecting} // 连接过程中禁用按钮
               >
-                {isElectronApp ? '连接设备' : '连接设备'}
+                {isConnecting ? '连接中...' : (isElectronApp ? '连接设备' : '连接设备')}
               </button>
             ) : (
               <button 

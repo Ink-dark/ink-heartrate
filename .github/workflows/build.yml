@@ -26,7 +26,7 @@ jobs:
         npm install -g cnpm --registry=https://registry.npmmirror.com
         cnpm install
 
-    - name: Update version
+    - name: Extract version from tag
       id: version
       uses: actions/github-script@v7
       with:
@@ -34,31 +34,46 @@ jobs:
           const fs = require('fs');
           const path = require('path');
           
-          // Read package.json
-          const packageJsonPath = path.join(process.cwd(), 'package.json');
-          const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+          // Get current ref
+          const ref = process.env.GITHUB_REF;
+          console.log(`Current ref: ${ref}`);
           
-          // Get current version
-          const currentVersion = packageJson.version;
-          console.log(`Current version: ${currentVersion}`);
-          
-          // Split version into parts
-          const versionParts = currentVersion.split('.');
-          const major = parseInt(versionParts[0]);
-          const minor = parseInt(versionParts[1]);
-          const patch = parseInt(versionParts[2]);
-          
-          // Increment patch version
-          const newPatch = patch + 1;
-          const newVersion = `${major}.${minor}.${newPatch}`;
-          console.log(`New version: ${newVersion}`);
-          
-          // Update package.json
-          packageJson.version = newVersion;
-          fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
-          
-          // Output new version for later steps
-          core.setOutput('new_version', newVersion);
+          // Check if it's a tag
+          if (ref && ref.startsWith('refs/tags/v')) {
+            // Extract version from tag
+            const tagVersion = ref.replace('refs/tags/v', '');
+            console.log(`Version from tag: ${tagVersion}`);
+            
+            // Update package.json
+            const packageJsonPath = path.join(process.cwd(), 'package.json');
+            const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+            packageJson.version = tagVersion;
+            fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+            
+            // Output version
+            core.setOutput('new_version', tagVersion);
+          } else {
+            // Fallback to incrementing patch version (for non-tag pushes)
+            const packageJsonPath = path.join(process.cwd(), 'package.json');
+            const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+            
+            const currentVersion = packageJson.version;
+            console.log(`Current version: ${currentVersion}`);
+            
+            const versionParts = currentVersion.split('.');
+            const major = parseInt(versionParts[0]);
+            const minor = parseInt(versionParts[1]);
+            const patch = parseInt(versionParts[2]);
+            
+            const newPatch = patch + 1;
+            const newVersion = `${major}.${minor}.${newPatch}`;
+            console.log(`New version: ${newVersion}`);
+            
+            packageJson.version = newVersion;
+            fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+            
+            core.setOutput('new_version', newVersion);
+          }
 
     - name: Build for Windows
       run: npm run dist
