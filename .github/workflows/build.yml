@@ -26,27 +26,37 @@ jobs:
 
     - name: Update version
       id: version
-      run: |
-        # Get current version
-        CURRENT_VERSION=$(npm pkg get version | tr -d '"')
-        echo "Current version: $CURRENT_VERSION"
-        
-        # Split version into parts
-        IFS='.' read -r -a VERSION_PARTS <<< "$CURRENT_VERSION"
-        MAJOR=${VERSION_PARTS[0]}
-        MINOR=${VERSION_PARTS[1]}
-        PATCH=${VERSION_PARTS[2]}
-        
-        # Increment patch version
-        NEW_PATCH=$((PATCH + 1))
-        NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
-        echo "New version: $NEW_VERSION"
-        
-        # Update package.json
-        npm pkg set version="$NEW_VERSION"
-        
-        # Output new version for later steps
-        echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+          
+          // Read package.json
+          const packageJsonPath = path.join(process.cwd(), 'package.json');
+          const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+          
+          // Get current version
+          const currentVersion = packageJson.version;
+          console.log(`Current version: ${currentVersion}`);
+          
+          // Split version into parts
+          const versionParts = currentVersion.split('.');
+          const major = parseInt(versionParts[0]);
+          const minor = parseInt(versionParts[1]);
+          const patch = parseInt(versionParts[2]);
+          
+          // Increment patch version
+          const newPatch = patch + 1;
+          const newVersion = `${major}.${minor}.${newPatch}`;
+          console.log(`New version: ${newVersion}`);
+          
+          // Update package.json
+          packageJson.version = newVersion;
+          fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+          
+          // Output new version for later steps
+          return newVersion;
 
     - name: Build for Windows
       if: matrix.os == 'windows-latest'
@@ -69,8 +79,8 @@ jobs:
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
-        tag_name: v${{ steps.version.outputs.new_version }}
-        name: Release v${{ steps.version.outputs.new_version }}
+        tag_name: v${{ steps.version.outputs.result }}
+        name: Release v${{ steps.version.outputs.result }}
         draft: false
         prerelease: false
         files: |
