@@ -3,6 +3,8 @@ name: Build and Release Windows Publish
 on:
   push:
     branches: [ master ]
+    tags:
+      - 'v*'
 
 jobs:
   create-release:
