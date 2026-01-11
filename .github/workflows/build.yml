@@ -1,4 +1,4 @@
-name: Build and Release Multi-Platform
+name: Build and Release Windows Publish
 
 on:
   push:
@@ -9,7 +9,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ windows-latest, macos-latest, ubuntu-latest ]
+        os: [ windows-latest ]
 
     steps:
     - uses: actions/checkout@v4
@@ -64,17 +64,6 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Build for macOS
-      if: matrix.os == 'macos-latest'
-      run: npm run dist
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Build for Linux
-      if: matrix.os == 'ubuntu-latest'
-      run: npm run dist
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
