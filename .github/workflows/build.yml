@@ -2,7 +2,7 @@ name: Build and Release Multi-Platform
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
 
 jobs:
   build:
