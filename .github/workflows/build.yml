@@ -6,10 +6,7 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ windows-latest ]
+    runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v4
@@ -59,7 +56,6 @@ jobs:
           return newVersion;
 
     - name: Build for Windows
-      if: matrix.os == 'windows-latest'
       run: npm run dist
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -74,9 +70,5 @@ jobs:
         prerelease: false
         files: |
           release/*.exe
-          release/*.dmg
-          release/*.AppImage
-          release/*.deb
-          release/*.rpm
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
