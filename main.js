@@ -8,6 +8,10 @@ let dataStore = {}
 
 // 保持对窗口对象的全局引用，如果不这么做的话，当 JavaScript 对象被垃圾回收的时候，窗口将会自动地关闭
 let mainWindow
+let deviceSelectorWindow // 设备选择窗口
+let isProcessingBluetoothDeviceSelection = false // 是否正在处理蓝牙设备选择事件
+let isDeviceSelectorVisible = false // 设备选择窗口是否可见
+let hasUserManuallyClosedWindow = false // 用户是否手动关闭过窗口
 
 function createWindow() {
   // 创建浏览器窗口
@@ -59,23 +63,180 @@ function createWindow() {
   mainWindow.webContents.on('select-bluetooth-device', (event, devices, callback) => {
     event.preventDefault()
     
-    // 显示设备选择对话框
-    const deviceList = devices.map(device => `${device.deviceName || '未知设备'} (${device.deviceId})`).join('\n')
+    // 防止重复处理
+    if (isProcessingBluetoothDeviceSelection) {
+      return
+    }
     
-    dialog.showMessageBox(mainWindow, {
-      type: 'info',
-      title: '选择蓝牙设备',
-      message: '请选择要连接的心率设备:',
-      detail: deviceList || '未找到蓝牙设备',
-      buttons: devices.map(device => device.deviceName || '未知设备')
-    }).then(result => {
-      if (result.response >= 0 && result.response < devices.length) {
-        callback(devices[result.response].deviceId)
-      } else {
-        callback('')
+    // 如果用户手动关闭过窗口，不再自动创建窗口
+    if (hasUserManuallyClosedWindow) {
+      console.log('用户已手动关闭窗口，不再自动创建')
+      if (global.bluetoothDeviceCallback) {
+        global.bluetoothDeviceCallback('')
+        global.bluetoothDeviceCallback = null
       }
-    })
+      return
+    }
+    
+    // 设置处理中标志
+    isProcessingBluetoothDeviceSelection = true
+    
+    // 更新回调函数和设备列表
+    global.bluetoothDeviceCallback = callback
+    global.bluetoothDevices = devices
+    
+    try {
+      // 如果窗口已存在，直接更新设备列表
+      if (deviceSelectorWindow && !deviceSelectorWindow.isDestroyed()) {
+        // 重新加载窗口以获取最新设备列表
+        deviceSelectorWindow.reload()
+      } else {
+        // 创建设备选择窗口
+        createDeviceSelectorWindow()
+      }
+      
+      // 设置窗口可见状态
+      isDeviceSelectorVisible = true
+      
+      // 通知渲染进程窗口已打开
+      mainWindow.webContents.send('bluetooth-selector-window-visibility', isDeviceSelectorVisible)
+    } finally {
+      // 无论成功与否，都要清除处理中标志
+      setTimeout(() => {
+        isProcessingBluetoothDeviceSelection = false
+      }, 1000)
+    }
   })
+  
+  // 处理设备选择窗口发送的设备选择结果
+  ipcMain.handle('select-bluetooth-device', (event, deviceId) => {
+    if (global.bluetoothDeviceCallback) {
+      global.bluetoothDeviceCallback(deviceId)
+      global.bluetoothDeviceCallback = null
+    }
+    if (deviceSelectorWindow) {
+      deviceSelectorWindow.close()
+      deviceSelectorWindow = null
+    }
+    
+    // 更新窗口可见状态
+    isDeviceSelectorVisible = false
+    
+    // 通知渲染进程窗口已关闭
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('bluetooth-selector-window-visibility', isDeviceSelectorVisible)
+    }
+    
+    return { success: true }
+  })
+  
+  // 取消蓝牙设备选择
+  ipcMain.handle('cancel-bluetooth-device-selection', () => {
+    if (global.bluetoothDeviceCallback) {
+      global.bluetoothDeviceCallback('')
+      global.bluetoothDeviceCallback = null
+    }
+    if (deviceSelectorWindow) {
+      deviceSelectorWindow.close()
+      deviceSelectorWindow = null
+    }
+    
+    // 更新窗口可见状态
+    isDeviceSelectorVisible = false
+    
+    // 通知渲染进程窗口已关闭和选择已取消
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('bluetooth-selector-window-visibility', isDeviceSelectorVisible)
+      mainWindow.webContents.send('bluetooth-selection-canceled')
+    }
+    
+    return { success: true }
+  })
+  
+  // 发送设备列表到设备选择窗口
+  ipcMain.handle('get-bluetooth-devices', () => {
+    return global.bluetoothDevices || []
+  })
+  
+  // 重置用户手动关闭窗口状态
+  ipcMain.handle('reset-bluetooth-manual-close-state', () => {
+    hasUserManuallyClosedWindow = false
+    console.log('已重置用户手动关闭窗口状态')
+    return { success: true }
+  })
+}
+
+// 创建设备选择窗口
+function createDeviceSelectorWindow() {
+  // 如果窗口已存在，先关闭
+  if (deviceSelectorWindow && !deviceSelectorWindow.isDestroyed()) {
+    deviceSelectorWindow.close()
+    deviceSelectorWindow = null
+  }
+  
+  // 创建设备选择窗口
+  deviceSelectorWindow = new BrowserWindow({
+    width: 400,
+    height: 500,
+    resizable: true,
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      enableRemoteModule: false,
+      preload: path.join(__dirname, 'preload.js'),
+      // 启用Web Bluetooth API支持
+      experimentalFeatures: true
+    },
+    icon: path.join(__dirname, 'build', 'icon.png'), // 图标文件
+    show: true,
+    title: '选择心率设备',
+    parent: mainWindow, // 设置主窗口为父窗口
+    modal: true // 模态窗口
+  })
+  
+  // 加载设备选择窗口的HTML文件
+  deviceSelectorWindow.loadFile('device-selector.html')
+  
+  // 当窗口关闭时，清理引用和状态
+  deviceSelectorWindow.on('closed', () => {
+    // 设置窗口不可见状态
+    isDeviceSelectorVisible = false
+    
+    // 通知渲染进程窗口已关闭
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('bluetooth-selector-window-visibility', isDeviceSelectorVisible)
+    }
+    
+    // 如果用户手动关闭窗口，设置标记
+    if (!global.bluetoothDeviceCallback) {
+      hasUserManuallyClosedWindow = true
+    }
+    
+    deviceSelectorWindow = null
+  })
+  
+  // 窗口显示时更新状态
+  deviceSelectorWindow.on('show', () => {
+    isDeviceSelectorVisible = true
+    // 通知渲染进程窗口已打开
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('bluetooth-selector-window-visibility', isDeviceSelectorVisible)
+    }
+  })
+  
+  // 窗口隐藏时更新状态
+  deviceSelectorWindow.on('hide', () => {
+    isDeviceSelectorVisible = false
+    // 通知渲染进程窗口已隐藏
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('bluetooth-selector-window-visibility', isDeviceSelectorVisible)
+    }
+  })
+  
+  // 在开发模式下打开开发者工具
+  if (isDev) {
+    deviceSelectorWindow.webContents.openDevTools()
+  }
 }
 
 function createMenu() {

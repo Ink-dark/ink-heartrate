@@ -59,7 +59,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     },
 
     // 获取已连接的设备
-    getDevices: () => {
+    getConnectedDevices: () => {
       if (window.navigator && window.navigator.bluetooth) {
         return window.navigator.bluetooth.getDevices()
       }
@@ -70,6 +70,49 @@ contextBridge.exposeInMainWorld('electronAPI', {
     requestLEScanPermission: () => {
       // 在Electron中，权限检查可能需要不同的处理方式
       return Promise.resolve({ granted: true })
+    },
+    
+    // 选择蓝牙设备（由主进程调用）
+    selectDevice: (deviceId) => ipcRenderer.invoke('select-bluetooth-device', deviceId),
+    
+    // 取消蓝牙设备选择
+    cancelDeviceSelection: () => ipcRenderer.invoke('cancel-bluetooth-device-selection'),
+    
+    // 监听蓝牙设备检测事件
+    onDevicesDetected: (callback) => {
+      ipcRenderer.on('bluetooth-devices-detected', (event, devices) => {
+        callback(devices)
+      })
+    },
+    
+    // 获取蓝牙设备列表
+    getDevices: () => ipcRenderer.invoke('get-bluetooth-devices'),
+    
+    // 监听设备选择取消事件
+    onSelectionCanceled: (callback) => {
+      const handleSelectionCanceled = () => {
+        callback()
+      }
+      ipcRenderer.on('bluetooth-selection-canceled', handleSelectionCanceled)
+      return () => {
+        ipcRenderer.removeListener('bluetooth-selection-canceled', handleSelectionCanceled)
+      }
+    },
+    
+    // 监听设备选择窗口可见性变化
+    onSelectorWindowVisibility: (callback) => {
+      const handleSelectorWindowVisibility = (event, isVisible) => {
+        callback(isVisible)
+      }
+      ipcRenderer.on('bluetooth-selector-window-visibility', handleSelectorWindowVisibility)
+      return () => {
+        ipcRenderer.removeListener('bluetooth-selector-window-visibility', handleSelectorWindowVisibility)
+      }
+    },
+    
+    // 重置用户手动关闭窗口状态
+    resetManualCloseState: () => {
+      return ipcRenderer.invoke('reset-bluetooth-manual-close-state')
     }
   },
 

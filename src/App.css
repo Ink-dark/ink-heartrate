@@ -43,11 +43,16 @@
 
 .heart-rate-value {
   font-size: 2rem;
-  font-weight: 300;
+  font-weight: 700; /* 增加字重，使数字更粗 */
   color: #ff6b6b;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4); /* 增强阴影效果 */
   font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
   letter-spacing: -2px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* 增加描边效果，确保在色度键抠图后数字仍然清晰 */
+  text-stroke: 1px rgba(0, 0, 0, 0.5);
+  -webkit-text-stroke: 1px rgba(0, 0, 0, 0.5);
 }
 
 .heart-rate-unit {
@@ -101,6 +106,25 @@
   background: rgba(240, 240, 240, 0.9);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 按钮禁用状态样式 */
+.minimal-btn:disabled {
+  background: rgba(230, 230, 230, 0.9) !important;
+  color: rgba(150, 150, 150, 0.8) !important;
+  border-color: rgba(200, 200, 200, 0.4) !important;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+  opacity: 0.7;
+  pointer-events: none; /* 禁用鼠标事件 */
+}
+
+/* 确保禁用状态下没有悬停效果 */
+.minimal-btn:disabled:hover {
+  background: rgba(230, 230, 230, 0.9) !important;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 .minimal-btn.connect {
@@ -175,3 +199,90 @@
 }
 
 /* 移除响应式垂直布局，始终保持横向布局 */
+
+/* 蓝牙设备选择界面样式 */
+.device-selector-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.device-selector-container {
+  background-color: white;
+  border-radius: 20px;
+  padding: 20px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.device-selector-container h3 {
+  margin: 0 0 15px 0;
+  font-size: 1.2rem;
+  color: #333;
+  text-align: center;
+}
+
+.device-list {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: 15px;
+}
+
+.device-item {
+  padding: 10px;
+  margin-bottom: 8px;
+  background-color: #f5f5f5;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.device-item:hover {
+  background-color: #e0e0e0;
+}
+
+.device-name {
+  font-weight: 500;
+  margin-bottom: 3px;
+}
+
+.device-id {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.no-devices {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.device-selector-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.device-selector-actions .minimal-btn {
+  padding: 8px 20px;
+  font-size: 1rem;
+}
+
+/* 取消按钮样式 */
+.minimal-btn.cancel {
+  background: rgba(244, 67, 54, 0.2);
+  border-color: rgba(244, 67, 54, 0.4);
+  color: rgba(244, 67, 54, 0.8);
+}
+
+.minimal-btn.cancel:hover {
+  background: rgba(244, 67, 54, 0.3);
+  color: rgba(244, 67, 54, 1);
+}
