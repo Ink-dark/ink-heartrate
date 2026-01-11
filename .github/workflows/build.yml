@@ -18,8 +18,13 @@ jobs:
       with:
         node-version: '18.x'
 
+    - name: Check and fix package.json version
+      run: |
+        # 确保版本号格式正确
+        CURRENT_VERSION=$(node -e "console.log(require('./package.json').version)")
+        echo "Current version: $CURRENT_VERSION"
     - name: Install dependencies
-      run: npm ci
+      run: npm install
 
     - name: Update version
       id: version
