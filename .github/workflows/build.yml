@@ -34,6 +34,7 @@ jobs:
         script: |
           const fs = require('fs');
           const path = require('path');
+          const core = require('@actions/core');
           
           // Read package.json
           const packageJsonPath = path.join(process.cwd(), 'package.json');
@@ -59,7 +60,7 @@ jobs:
           fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
           
           // Output new version for later steps
-          return newVersion;
+          core.setOutput('new_version', newVersion);
 
     - name: Build for Windows
       run: npm run dist
@@ -70,8 +71,8 @@ jobs:
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
-        tag_name: v${{ steps.version.outputs.result }}
-        name: Release v${{ steps.version.outputs.result }}
+        tag_name: v${{ steps.version.outputs.new_version }}
+        name: Release v${{ steps.version.outputs.new_version }}
         draft: false
         prerelease: false
         files: |
